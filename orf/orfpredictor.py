@@ -19,6 +19,8 @@ def run_orfpredictor(config):
 		run_blast(config,config["INPUT"][organism])
 		remove_duplicates(config,config["INPUT"][organism])
 		predict_orfs(config,config["INPUT"][organism])
+		extract_orfs(config,config["INPUT"][organism])
+
 def create_orf_directory(config):
 	'''Create ORF-Directory'''
 	if os.path.isdir(config["OUTPUT"]["folder"]+"orfs/"):
@@ -97,3 +99,27 @@ def predict_orfs(config,organism):
 		logging.error("Gathering ORFs for "+organism["prefix"]+" ended with error")
 		print "Encountered an error while getting ORFs for "+organism["prefix"]
 		sys.exit(1)
+
+def extract_orfs(config,organism):
+	'''Extract nucleotide & AA-sequences out of ORF-results'''
+	print "Extracting sequences"
+	logging.info("Extracting nt & aa sequences out of ORF-results")
+	orf_handle = open(config["OUTPUT"]["folder"] + "orfs/" + organism["prefix"]+"-orfs.tsv")
+	nucleotide_handle = open(config["OUTPUT"]["folder"] + "orfs/" + organism["prefix"]+"-nucleotide-orfs.fasta","w")
+	aa_handle = open(config["OUTPUT"]["folder"] + "orfs/" + organism["prefix"]+"-aa-orfs.fasta","w")
+
+	for line in orf_handle:
+		if line[0] != "#":
+			line_array = line.strip().split("\t")
+			identifier = line_array[0]
+			nt_sequence = line_array[4]
+			aa_sequence = line_array[5]
+			nucleotide_handle.write(">"+identifier+"\n")
+			nucleotide_handle.write(nt_sequence+"\n")
+			aa_handle.write(">"+identifier+"\n")
+			aa_handle.write(aa_sequence+"\n")
+	orf_handle.close()
+	aa_handle.close()
+	nucleotide_handle.close()
+	print "Extracted sequences"
+	logging.info("Extracted sequences for "+organism["prefix"])

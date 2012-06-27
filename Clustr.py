@@ -2,6 +2,7 @@ from configobj import ConfigObj
 import os,sys,getopt
 import logging
 from orf import orfpredictor
+from cluster import orthomcl
 
 def get_parameters(arguments):
 	'''Check whether all parameters are present'''
@@ -81,4 +82,6 @@ def main():
 		sys.exit(1)
 	set_logging(config)	
 	orfpredictor.run_orfpredictor(config)	
+	orthomcl.runOrthoMCL(config)
+
 main()
