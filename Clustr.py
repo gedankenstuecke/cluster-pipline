@@ -1,3 +1,4 @@
+#!/usr/bin/python
 from configobj import ConfigObj
 import os,sys,getopt
 import logging
@@ -41,7 +42,9 @@ def read_config(arguments):
 	'''Read Config'''
 	config = ConfigObj(arguments["config_file"])
 	if config["OUTPUT"]["folder"][-1] != "/":
-		config["OUTPUT"]["folder"] = config["OUTPUT"]["folder"] + "/" 
+		config["OUTPUT"]["folder"] = config["OUTPUT"]["folder"] + "/"
+	if config["ORTHOMCL"]["location"][-1] != "/":
+		config["ORTHOMCL"]["location"] = config["ORTHOMCL"]["location"] + "/"
 	return config
 
 def check_path(config):
