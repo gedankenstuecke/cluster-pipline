@@ -22,10 +22,40 @@ def run_orfpredictor(config):
 			predict_orfs(config,config["INPUT"][organism])
 			extract_orfs(config,config["INPUT"][organism])
 		else:
+		    print "----"
 			movePeptides(config,config["INPUT"][organism])
 
 def movePeptides(config,organism):
 	'''Move peptide to fit with structure of pipeline'''
+	print "Copy files for "+ organism["prefix"]
+	request = "cp " + organism["assembly_fasta"] + " " + config["OUTPUT"]["folder"] + "orfs/" + organism["prefix"] + "-nucleotide-orfs.fasta"
+	try:
+	    return_value = subprocess.call(request, shell=True)
+	    if return_value != 0:
+	        logging.error("Couldn't copy nucleotide-file for "+organism["prefix"])
+	        print "Couldn't copy nucleotide-file for "+organism["prefix"]
+	        sys.exit(1)
+	    else:
+	        logging.info("Copied nucleotide-file for "+organism["prefix"])
+	except OSError, e:
+        logging.error("Couldn't copy nucleotide-file for "+organism["prefix"])
+        print "Couldn't copy nucleotide-file for "+organism["prefix"]
+        sys.exit(1)
+
+	request = "cp " + organism["assembly_fasta"] + " " + config["OUTPUT"]["folder"] + "orfs/" + organism["prefix"] + "-aa-orfs.fasta"
+	try:
+	    return_value = subprocess.call(request, shell=True)
+	    if return_value != 0:
+	        logging.error("Couldn't copy aa-file for "+organism["prefix"])
+	        print "Couldn't copy aa-file for "+organism["prefix"]
+	        sys.exit(1)
+        else:
+            logging.info("Copied aa-file for "+organism["prefix"])
+    except OSError, e:
+        logging.error("Couldn't copy aa-file for "+organism["prefix"])
+        print "Couldn't copy aa-file for "+organism["prefix"]
+        sys.exit(1)
+	
 
 def create_orf_directory(config):
 	'''Create ORF-Directory'''

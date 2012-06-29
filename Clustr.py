@@ -4,10 +4,11 @@ import os,sys,getopt
 import logging
 from orf import orfpredictor
 from cluster import orthomcl
+from filtering import filter
 
 def get_parameters(arguments):
 	'''Check whether all parameters are present'''
-
+    
 	out_args = {}
 	arguments.pop(0)
 	optlist, arguments = getopt.getopt(arguments, 'hc:')
@@ -88,5 +89,6 @@ def main():
 	set_logging(config)	
 	orfpredictor.run_orfpredictor(config)	
 	orthomcl.runOrthoMCL(config)
+	filter.
 
 main()

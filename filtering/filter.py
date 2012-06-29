@@ -62,20 +62,25 @@ def createClusters(config):
 		print "Couldn't create FASTAs for clusters"
 		sys.exit(1)
 
+def runFiltering(config):
+    '''Run all steps of filtering & creating final clusters'''
+    checkNumber(config)
+    createOrthoGG(config)
+    createClusters(config)
+    
+def createFakeConfig():
+    config = {}
+    config["OUTPUT"] = {}
+    config["OUTPUT"]["folder"] = "/bastian/hanno/orthomcl_rip_pig/"
+    config["INPUT"] = {}
 
-
-
-
-config = {}
-config["OUTPUT"] = {}
-config["OUTPUT"]["folder"] = "/bastian/hanno/orthomcl_rip_pig/"
-config["INPUT"] = {}
-
-config["INPUT"]["ORGANISM1"] = {}
-config["INPUT"]["ORGANISM2"] = {}
-config["INPUT"]["ORGANISM1"]["prefix"] = "pig"
-config["INPUT"]["ORGANISM2"]["prefix"] = "rip"
-config["CLUSTER"]["folder"] = "/bastian/cluster_pipeline/filtering/"
-
-checkNumber(config)
-createOrthoGG(config)
+    config["INPUT"]["ORGANISM1"] = {}
+    config["INPUT"]["ORGANISM2"] = {}
+    config["INPUT"]["ORGANISM1"]["prefix"] = "pig"
+    config["INPUT"]["ORGANISM2"]["prefix"] = "rip"
+    config["CLUSTER"]["folder"] = "/bastian/cluster_pipeline/filtering/"
+    return config
+    
+# config = createFakeConfig()
+# checkNumber(config)
+# createOrthoGG(config)
