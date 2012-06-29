@@ -45,6 +45,8 @@ def read_config(arguments):
 		config["OUTPUT"]["folder"] = config["OUTPUT"]["folder"] + "/"
 	if config["ORTHOMCL"]["location"][-1] != "/":
 		config["ORTHOMCL"]["location"] = config["ORTHOMCL"]["location"] + "/"
+	if config["CLUSTER"]["folder"][-1] != "/":
+		config["CLUSTER"]["folder"] = config["CLUSTER"]["folder"] + "/"
 	return config
 
 def check_path(config):

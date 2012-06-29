@@ -15,11 +15,17 @@ def run_orfpredictor(config):
 		print "Couldn't create ORF Directory. Please check you have write-permissions"
 		sys.exit(1)
 	for organism in config["INPUT"]: # iterate over all organisms & run prediction for each
-		print "----"
-		run_blast(config,config["INPUT"][organism])
-		remove_duplicates(config,config["INPUT"][organism])
-		predict_orfs(config,config["INPUT"][organism])
-		extract_orfs(config,config["INPUT"][organism])
+		if config["INPUT"][organism]["skip_orfs"] == "False":
+			print "----"
+			run_blast(config,config["INPUT"][organism])
+			remove_duplicates(config,config["INPUT"][organism])
+			predict_orfs(config,config["INPUT"][organism])
+			extract_orfs(config,config["INPUT"][organism])
+		else:
+			movePeptides(config,config["INPUT"][organism])
+
+def movePeptides(config,organism):
+	'''Move peptide to fit with structure of pipeline'''
 
 def create_orf_directory(config):
 	'''Create ORF-Directory'''
