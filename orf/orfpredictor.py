@@ -42,7 +42,7 @@ def movePeptides(config,organism):
         print "Couldn't copy nucleotide-file for "+organism["prefix"]
         sys.exit(1)
 
-	request = "cp " + organism["assembly_fasta"] + " " + config["OUTPUT"]["folder"] + "orfs/" + organism["prefix"] + "-aa-orfs.fasta"
+	request = "cp " + organism["peptides_fasta"] + " " + config["OUTPUT"]["folder"] + "orfs/" + organism["prefix"] + "-aa-orfs.fasta"
 	try:
 	    return_value = subprocess.call(request, shell=True)
 	    if return_value != 0:
@@ -51,7 +51,7 @@ def movePeptides(config,organism):
 	        sys.exit(1)
         else:
             logging.info("Copied aa-file for "+organism["prefix"])
-    except OSError, e:
+	except OSError, e:
         logging.error("Couldn't copy aa-file for "+organism["prefix"])
         print "Couldn't copy aa-file for "+organism["prefix"]
         sys.exit(1)
