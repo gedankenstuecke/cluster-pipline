@@ -62,12 +62,100 @@ def createClusters(config):
         print "Couldn't create FASTAs for clusters"
         sys.exit(1)
 
+def moveParalogCluster(config):
+    '''Move paralog-results to result-folder'''
+    if os.path.isdir(config["OUTPUT"]["folder"]+"cluster/paralog_clusters/"):
+        try:
+            request = "rm "+config["OUTPUT"]["folder"]+"cluster/paralog_clusters/*"
+            subprocess.call(request,shell=True)
+        except:
+            logging.error("Couldn't move clusters")
+            print "Couldn't move clusters"
+            sys.exit(1)
+    else:
+        try:
+            os.makedirs(config["OUTPUT"]["folder"]+"cluster/paralog_clusters/")
+        except:
+            print "Couldn't move clusters"
+            logging.error("Couldn't move clusters")
+            sys.exit(1)
+    try:
+        request = "mv "+config["ORTHOMCL"]["result_prefix"]+"*.*fasta "
+        request = request + config["OUTPUT"]["folder"]+"cluster/paralog_clusters"
+        subprocess.call(request,shell=True)        
+        request = "mv "+config["ORTHOMCL"]["result_prefix"]+"*.ids "
+        request = request + config["OUTPUT"]["folder"]+"cluster/paralog_clusters"
+        subprocess.call(request,shell=True)
+    except:    
+            print "Couldn't move clusters"
+            logging.error("Couldn't move clusters")
+            sys.exit(1)
+
+def filterClusters(config):
+    '''Filter paralog sequences out of clusters'''
+    request = "python "+ config["CLUSTER"]["folder"] + "07-remove-paralogs.py "
+    request = request + config["OUTPUT"]["folder"] + "cluster/paralog_clusters/ "
+    request = request + config["OUTPUT"]["folder"] + "cluster/goodProteins.fasta "
+    request = request + config["OUTPUT"]["folder"] + "cluster/ortho.gg"
+    try:
+        return_value = subprocess.call(request, shell=True)
+        if return_value != 0:
+            print "Couldn't remove paralogs"
+            logging.error("Couldn't remove paralogs")
+            sys.exit(1)
+        else:
+            request = "mv paralog-free-clusters/ "+ config["OUTPUT"]["folder"]+"cluster/"
+            subprocess.call(request, shell=True)
+            request = "mv noparalogs.orthomcl.out " + config["OUTPUT"]["folder"] +"cluster/paralog-free-clusters.csv"
+            subprocess.call(request, shell=True)
+            logging.info("Removed paralogs")
+            print "Removed paralogs"
+    except OSError, e:
+        print "Couldn't remove paralogs"
+        logging.error("Couldn't remove paralogs")
+        sys.exit(1)
+
+def alignProteins(config):
+    if os.path.isdir(config["OUTPUT"]["folder"] + "cluster/protein_alignments"):
+        try:
+            request = "rm " + config["OUTPUT"]["folder"]+"cluster/protein_alignments/*"
+            subprocess.call(request,shell=True)
+        except:
+            logging.error("Couldn't align proteins")
+            print "Couldn't align proteins"
+            sys.exit(1)
+    else:
+        try:
+            os.makedirs(config["OUTPUT"]["folder"]+"cluster/protein_alignments/")
+        except:
+            logging.error("Couldn't align proteins")
+            print "Couldn't align proteins"
+            sys.exit(1)
+
+    files = os.listdir(config["OUTPUT"]["folder"]+"cluster/paralog-free-clusters/")
+    fastas = []
+    for f in files:
+        if f.find(".ufasta") != -1:
+            fastas.append(f)
+
+    for fasta in fastas:
+        request = os.getcwd() + "/filtering/muscle3.8.31 -in "
+        request = request + config["OUTPUT"]["folder"]+"cluster/paralog-free-clusters/" 
+        request = request + fasta + " -out "
+        request = request + config["OUTPUT"]["folder"]+"cluster/protein_alignments/"
+        request = request + fasta.replace(".ufasta","protein_alignment.fasta")
+        subprocess.call(request, shell=True)
+        
+
 def runFiltering(config):
     '''Run all steps of filtering & creating final clusters'''
     checkNumber(config)
     createOrthoGG(config)
     createClusters(config)
-
+    moveParalogCluster(config)
+    filterClusters(config)
+    alignProteins(config)
+    
 def createFakeConfig():
     config = {}
     config["OUTPUT"] = {}

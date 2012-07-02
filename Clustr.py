@@ -89,6 +89,7 @@ def main():
     set_logging(config)
     orfpredictor.run_orfpredictor(config)
     orthomcl.runOrthoMCL(config)
-    filter.
+    filter.runFiltering(config)
 
 main()
+
