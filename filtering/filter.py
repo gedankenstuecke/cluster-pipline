@@ -1,6 +1,7 @@
 import sys,os
 import logging
 import subprocess
+from Bio import SeqIO
 
 def checkNumber(config):
     '''Check that all species are represented in cluster'''
@@ -104,9 +105,16 @@ def filterClusters(config):
             logging.error("Couldn't remove paralogs")
             sys.exit(1)
         else:
+            if os.path.isdir(config["OUTPUT"]["folder"]+"cluster/paralog-free-clusters/"):
+                request = "rm -r " + config["OUTPUT"]["folder"]+ "cluster/paralog-free-clusters"
+                subprocess.call(request,shell=True)
             request = "mv paralog-free-clusters/ "+ config["OUTPUT"]["folder"]+"cluster/"
             subprocess.call(request, shell=True)
             request = "mv noparalogs.orthomcl.out " + config["OUTPUT"]["folder"] +"cluster/paralog-free-clusters.csv"
+            subprocess.call(request, shell=True)
+            request = "rm -r t_coffee.tmp*"
+            subprocess.call(request, shell=True)
+            request = "rm .*.lock4tcoffee"
             subprocess.call(request, shell=True)
             logging.info("Removed paralogs")
             print "Removed paralogs"
@@ -116,6 +124,7 @@ def filterClusters(config):
         sys.exit(1)
 
 def alignProteins(config):
+    '''Align sequences in protein clusters'''
     if os.path.isdir(config["OUTPUT"]["folder"] + "cluster/protein_alignments"):
         try:
             request = "rm " + config["OUTPUT"]["folder"]+"cluster/protein_alignments/*"
@@ -137,7 +146,7 @@ def alignProteins(config):
     for f in files:
         if f.find(".ufasta") != -1:
             fastas.append(f)
-
+    logging.info("Aligning protein-clusters")
     for fasta in fastas:
         request = os.getcwd() + "/filtering/muscle3.8.31 -in "
         request = request + config["OUTPUT"]["folder"]+"cluster/paralog-free-clusters/" 
@@ -145,7 +154,45 @@ def alignProteins(config):
         request = request + config["OUTPUT"]["folder"]+"cluster/protein_alignments/"
         request = request + fasta.replace(".ufasta","protein_alignment.fasta")
         subprocess.call(request, shell=True)
-        
+    logging.info("Aligned protein-clusters")
+    print "Aligned protein-clusters"
+
+def createNucleotideCluster(config):
+    '''Grab Nucleotide-Sequences of ORFs and turn into unaligned clusters'''
+    logging.info("Creating nucleotide clusters")
+    print "Creating nucleotide-clusters"
+    sequences = {}
+    for organism_config in config["INPUT"]:
+        organism = config["INPUT"][organism_config]
+        handle = open(config["OUTPUT"]["folder"]+"orfs/"+organism["prefix"]+"-nucleotide-orfs.fasta","r")
+        sequences[organism["prefix"]] = SeqIO.to_dict(SeqIO.parse(handle, "fasta"))
+        handle.close()
+
+    cluster_handle = open(config["OUTPUT"]["folder"]+"cluster/paralog-free-clusters.csv","r")
+    clusters {}
+    for line in cluster_handle:
+        seq_names = {}
+        line_array = line.strip().split("\t")
+        cluster_name = line_array[0][:line_array[0].find("(")]
+        name_array = line_array[1].split(" ")
+        for name in name_array:
+            prefix = name[:name.find("|")]
+            cluster_id = name[name.find("|"+1:name.find("(")] 
+            seq_names[prefix] = cluster_id
+        clusters[cluster_name] = seq_names           
+
+    if os.path.isdir(config["OUTPUT"]["folder"] + "cluster/nucleotide_clusters/"):
+        request = "rm " + config["OUTPUT"]["folder"] + "cluster/nucleotide_clusters/*"
+        subprocess.call(request, shell=True)
+    else:
+        os.makedirs(config["OUTPUT"]["folder"]+"cluster/nucleotide_clusters/") 
+
+    for name,cids in clusters.items():
+        out_file = open(config["OUTPUT"]["folder"] + "cluster/nucleotide_clusters/" + name + ".fasta","w")
+        for prefix,seqid in cids.items():
+            out_file.write(">"+prefix+"\n")
+            outfile.write(sequences[prefix][seqid]+"\n")
+        out_file.close() 
 
 def runFiltering(config):
     '''Run all steps of filtering & creating final clusters'''
@@ -155,7 +202,8 @@ def runFiltering(config):
     moveParalogCluster(config)
     filterClusters(config)
     alignProteins(config)
-    
+    createNucleotideCluster(config)
+ 
 def createFakeConfig():
     config = {}
     config["OUTPUT"] = {}
