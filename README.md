@@ -20,14 +20,14 @@ In short:
 In detail:
 * Clustr.py will try to find a file named "config.cfg" to get all the settings, an example is _config.cfg.example_ (surprise!). You can also specify the config-file using the _"-c"_ parameter while starting: `Clustr.py -c /some/config/somewhere.cfg`
 * In the config-file you will have to provide (looking at the example should give you an idea): 
-** The organisms/assemblies you want to cluster
-** You can choose to skip the ORF prediction if you already have protein- & nucleotide-sequences for the ORFs
-*** In this case: Specify the nucleotide-ORF-fasta as *assembly_fasta* and the protein-ORF-fasta as *peptides_fasta*
-** If you want to perform the ORF prediction: Where the blastx-supported protein-blast-database is located you want to use for the ORF-prediction
-** Where your makeblastdb-binary and the OrthoMCL-binaries are located
-** The credentials for your MySQL-database (write & delete-access is required)
-** Some output-details for OrthoMCL (name of the resulting clusters etc.)
-** After setting up your config: Run Clustr.py
+    * The organisms/assemblies you want to cluster
+    * You can choose to skip the ORF prediction if you already have protein- & nucleotide-sequences for the ORFs
+        * In this case: Specify the nucleotide-ORF-fasta as *assembly_fasta* and the protein-ORF-fasta as *peptides_fasta*
+    * If you want to perform the ORF prediction: Where the blastx-supported protein-blast-database is located you want to use for the ORF-prediction
+    * Where your makeblastdb-binary and the OrthoMCL-binaries are located
+    * The credentials for your MySQL-database (write & delete-access is required)
+    * Some output-details for OrthoMCL (name of the resulting clusters etc.)
+    * After setting up your config: Run Clustr.py
 
 ## To-Do
 * Implement further trimming of resulting alignments
