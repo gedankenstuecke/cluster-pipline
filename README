@@ -1,8 +1,0 @@
-working to create a transcriptome-analysis-pipeline.
-to implement: 
-1. orf-prediction
-2. clustering using OrthoMCL
-3. remove in-paralogs from clusters
-4. aligning AAs of resulting orthologous clusters
-5. codon-true nt-alignments of clusters
-6. filtering

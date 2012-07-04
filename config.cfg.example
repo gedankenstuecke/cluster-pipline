@@ -1,0 +1,66 @@
+# CONFIG FILE FOR CLUSTERING-PIPELINE
+
+# INPUT SPECIES-NAMES & ASSEMBLY-FASTA-FILES
+[INPUT]
+
+# Create a subset of configurations for each organism you want to cluster
+
+[[ORGANISM1]]
+name = "Test organism #1"	# full name of your organism 
+prefix = "to1"	    # organism-prefix, used in resulting clusters, 3 to 4 characters long
+assembly_fasta = "/bastian/cluster_pipeline/testdata/test1-nt.fasta" # full path to assembly file (or nucleotide-orfs if you want to skip orf-prediction)
+unique_field = 1	# which field in the fasta-header is unique 
+        			# and shall be used to discriminate sequences of each file?
+		        	# field separators are in fastas are " " and "|" 
+skip_orfs = True    # if you already have predicted open reading frames you can skip the step by setting it to true, else use "False"
+peptides_fasta = "/bastian/cluster_pipeline/testdata/test1-aa.fasta" # where are the protein-sequences of the open reading frames located?
+
+[[ORGANISM2]]
+name = "Test organism #2"
+prefix = "to2"
+assembly_fasta = "/bastian/cluster_pipeline/testdata/test2-contigs.fasta"
+unique_field = 1
+skip_orfs = False
+peptides_fasta = ""
+
+[[ORGANISM3]]
+name = "Test organism #3"
+prefix = "to3"
+assembly_fasta = "/bastian/cluster_pipeline/testdata/test3-nt.fasta"
+unique_field = 1
+skip_orfs = True
+peptides_fasta = "/bastian/cluster_pipeline/testdata/test3-aa.fasta"
+
+# OUTPUT
+[OUTPUT]
+folder = "/your/dir/output_data/" # Give the complete path to where results should be stored
+logging = True # shall the pipeline write a log of all actions into output-folder?
+
+# SETTINGS FOR ORF-PREDICTION (done via ORFPredictor)
+[ORFPREDICTION]
+minimum_length = 50 # minimum length an ORF has to be if no blast-guidance could be found, in AA
+database = /home/informatics/Dokumente/ncbi-blast-2.2.23+/Blast_linux_installed/swissprot # path to the blastx-supporting database you want to use
+
+# SETTINGS FOR ORTHOMCL / CLUSTERING
+[ORTHOMCL]
+result_prefix = "pr" # prefix the final clusters should carry
+start_number = "1000" # number the clusters should start on
+location = "/somewhere/orthomcl/bin/" # folder where the orthomcl-executables are stored
+minimum_length = 10 # minimum length of aa-sequences
+max_percent_stop = 20 # maximum percent of stop codons
+makeblastdb = "/somewhere/bin/makeblastdb" # full path to your makeblastdb-executive
+dbLogin = user		# your login
+dbPassword = password 	# your password
+
+# you shouldn't need to edit this
+dbVendor = mysql	# type of database you want to use, right now only mysql works
+dbConnectString = dbi:mysql:orthomcl # how to connect and which database to use
+similarSequencesTable=SimilarSequences
+orthologTable=Ortholog
+inParalogTable=InParalog
+coOrthologTable=CoOrtholog
+interTaxonMatchView=InterTaxonMatch
+percentMatchCutoff=50
+evalueExponentCutoff=-5
+oracleIndexTblSpc=NONE
+

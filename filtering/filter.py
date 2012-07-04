@@ -46,7 +46,7 @@ def createOrthoGG(config):
 
 def createClusters(config):
     '''Create cluster-fasta-files'''
-    request = "python " + config["CLUSTER"]["folder"] + "06-build-clusters.py "
+    request = "python " + os.getcwd() + "/filtering/06-build-clusters.py "
     request = request + config["OUTPUT"]["folder"] + "cluster/groups_filtered.txt "
     request = request + config["OUTPUT"]["folder"] + "cluster/goodProteins.fasta"
     try:
@@ -94,7 +94,7 @@ def moveParalogCluster(config):
 
 def filterClusters(config):
     '''Filter paralog sequences out of clusters'''
-    request = "python "+ config["CLUSTER"]["folder"] + "07-remove-paralogs.py "
+    request = "python "+ os.getcwd() + "/filtering/07-remove-paralogs.py "
     request = request + config["OUTPUT"]["folder"] + "cluster/paralog_clusters/ "
     request = request + config["OUTPUT"]["folder"] + "cluster/goodProteins.fasta "
     request = request + config["OUTPUT"]["folder"] + "cluster/ortho.gg"
@@ -169,7 +169,7 @@ def createNucleotideCluster(config):
         handle.close()
 
     cluster_handle = open(config["OUTPUT"]["folder"]+"cluster/paralog-free-clusters.csv","r")
-    clusters {}
+    clusters =  {}
     for line in cluster_handle:
         seq_names = {}
         line_array = line.strip().split("\t")
@@ -177,7 +177,7 @@ def createNucleotideCluster(config):
         name_array = line_array[1].split(" ")
         for name in name_array:
             prefix = name[:name.find("|")]
-            cluster_id = name[name.find("|"+1:name.find("(")] 
+            cluster_id = name[name.find("|")+1:name.find("(")] 
             seq_names[prefix] = cluster_id
         clusters[cluster_name] = seq_names           
 
@@ -191,11 +191,38 @@ def createNucleotideCluster(config):
         out_file = open(config["OUTPUT"]["folder"] + "cluster/nucleotide_clusters/" + name + ".fasta","w")
         for prefix,seqid in cids.items():
             out_file.write(">"+prefix+"\n")
-            outfile.write(sequences[prefix][seqid]+"\n")
+            out_file.write(str(sequences[prefix][seqid].seq)+"\n")
         out_file.close() 
 
+def runPal2Nal(config):
+    '''Run Pal2Nal to create nucleotide-alignments'''
+    logging.info("Creating nucleotide alignments")
+    print "Creating Nucleotide alignments"
+    if os.path.isdir(config["OUTPUT"]["folder"] + "cluster/nucleotide_alignments"):
+        request = "rm " + config["OUTPUT"]["folder"] + "cluster/nucleotide_alignments/*"
+        subprocess.call(request, shell=True)
+    else:
+        os.makedirs(config["OUTPUT"]["folder"] + "cluster/nucleotide_alignments/")
+
+    proteinpath = config["OUTPUT"]["folder"]+"cluster/protein_alignments/"
+    nucleotidepath = config["OUTPUT"]["folder"]+"cluster/nucleotide_clusters/"
+    all_files = os.listdir(proteinpath)
+    fastas = []
+    for f in all_files:
+        if f.find(".fasta") != -1:
+            fastas.append(f)
+    for fasta in fastas:
+        request = os.getcwd() + "/filtering/pal2nal.pl "+proteinpath + fasta + " "
+        request = request + nucleotidepath + fasta.replace("protein_alignment","")
+        request = request + " -output fasta > " + config["OUTPUT"]["folder"] + "cluster/nucleotide_alignments/" + fasta.replace("protein_","nucleotide_")
+        return_value = subprocess.call(request, shell=True) 
+        print return_value
 def runFiltering(config):
     '''Run all steps of filtering & creating final clusters'''
+    print "---"
+    print "Filter and Align clusters"
+    print "---"
+    logging.info("Filter & Align clusters")
     checkNumber(config)
     createOrthoGG(config)
     createClusters(config)
@@ -203,6 +230,7 @@ def runFiltering(config):
     filterClusters(config)
     alignProteins(config)
     createNucleotideCluster(config)
+    runPal2Nal(config)
  
 def createFakeConfig():
     config = {}

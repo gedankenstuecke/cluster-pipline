@@ -2,9 +2,6 @@ import sys,os
 import subprocess
 import logging
 
-def clusterOrfs(config):
-    print "foo"
-
 def createOrthoDir(config):
     '''Create Directory for Cluster-Results'''
     if os.path.isdir(config["OUTPUT"]["folder"]+"cluster/"):
@@ -273,7 +270,6 @@ def mclToGroups(config):
     request = request + config["OUTPUT"]["folder"]+"cluster/groups.txt"
     try:
         logging.info("Running mcl to Groups")
-        logging.info("Request: "+request)
         return_value = subprocess.call(request, shell=True)
         if return_value != 0:
             logging.error("Failure during mcl-to-groups")
@@ -311,3 +307,7 @@ def runOrthoMCL(config):
     dumpPairs(config)
     runMcl(config)
     mclToGroups(config)
+    print "---"
+    print "Finished all clustering steps"
+    print "---"
+    logging.error("Finished all clustering steps")
