@@ -193,6 +193,8 @@ def createNucleotideCluster(config):
             out_file.write(">"+prefix+"\n")
             out_file.write(str(sequences[prefix][seqid].seq)+"\n")
         out_file.close() 
+    logging.info("Created nucleotide-clusters")
+    print "Created nucleotide-clusters"
 
 def runPal2Nal(config):
     '''Run Pal2Nal to create nucleotide-alignments'''
@@ -212,11 +214,15 @@ def runPal2Nal(config):
         if f.find(".fasta") != -1:
             fastas.append(f)
     for fasta in fastas:
+        print fasta
         request = os.getcwd() + "/filtering/pal2nal.pl "+proteinpath + fasta + " "
         request = request + nucleotidepath + fasta.replace("protein_alignment","")
         request = request + " -output fasta > " + config["OUTPUT"]["folder"] + "cluster/nucleotide_alignments/" + fasta.replace("protein_","nucleotide_")
         return_value = subprocess.call(request, shell=True) 
-        print return_value
+    print "Created nucleotide alignments"
+    print "----"
+    logging.info("Created nucleotide alignments")
+
 def runFiltering(config):
     '''Run all steps of filtering & creating final clusters'''
     print "---"
@@ -231,20 +237,6 @@ def runFiltering(config):
     alignProteins(config)
     createNucleotideCluster(config)
     runPal2Nal(config)
- 
-def createFakeConfig():
-    config = {}
-    config["OUTPUT"] = {}
-    config["OUTPUT"]["folder"] = "/bastian/hanno/orthomcl_rip_pig/"
-    config["INPUT"] = {}
-
-    config["INPUT"]["ORGANISM1"] = {}
-    config["INPUT"]["ORGANISM2"] = {}
-    config["INPUT"]["ORGANISM1"]["prefix"] = "pig"
-    config["INPUT"]["ORGANISM2"]["prefix"] = "rip"
-    config["CLUSTER"]["folder"] = "/bastian/cluster_pipeline/filtering/"
-    return config
-
-# config = createFakeConfig()
-# checkNumber(config)
-# createOrthoGG(config)
+    print "---"
+    print "Ran filtering & aligning of clusters"
+    print "---" 

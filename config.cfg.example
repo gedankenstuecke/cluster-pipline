@@ -31,6 +31,11 @@ unique_field = 1
 skip_orfs = True
 peptides_fasta = "/bastian/cluster_pipeline/testdata/test3-aa.fasta"
 
+[TRIMMING]
+trim = True
+min_length_cutoff = 51 # minimum length which non-gap alignment-parts need to be to be kept
+trim_length = 15 # number of nucleotides to remove in front and end
+
 # OUTPUT
 [OUTPUT]
 folder = "/your/dir/output_data/" # Give the complete path to where results should be stored

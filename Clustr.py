@@ -2,9 +2,11 @@
 from configobj import ConfigObj
 import os,sys,getopt
 import logging
+import datetime
 from orf import orfpredictor
 from cluster import orthomcl
 from filtering import filter
+from trimming import alignmenttrim
 
 def get_parameters(arguments):
     '''Check whether all parameters are present'''
@@ -46,8 +48,6 @@ def read_config(arguments):
         config["OUTPUT"]["folder"] = config["OUTPUT"]["folder"] + "/"
     if config["ORTHOMCL"]["location"][-1] != "/":
         config["ORTHOMCL"]["location"] = config["ORTHOMCL"]["location"] + "/"
-    if config["CLUSTER"]["folder"][-1] != "/":
-        config["CLUSTER"]["folder"] = config["CLUSTER"]["folder"] + "/"
     return config
 
 def check_path(config):
@@ -73,6 +73,18 @@ def set_logging(config):
                             level=logging.DEBUG)
     logging.info("Set up logging")
 
+def logStatistics(config):
+    '''Print statistics to log-file'''
+    logging.info("##############")
+    logging.info("# STATISTICS #")
+    logging.info("##############")
+    logging.info("")
+    logging.info("## ORFs ##")
+    for organism in config["INPUT"]:
+        organism_hash = config["INPUT"][organism]
+        if organism_hash["skip_config"] != "True":
+            orf_file = config["OUTPUT"]["folder"] + "orfs/" + organism["prefix"]         
+   
 def main():
     '''Run ALL the stuff!'''
     print ""
@@ -80,6 +92,7 @@ def main():
     print "Welcome to ClusterPy"
     print "--------------------"
     print ""
+    start = str(datetime.datetime.now())
     parameters = get_parameters(sys.argv)
     config = read_config(parameters)
     if check_path(config) != True:
@@ -90,6 +103,18 @@ def main():
     orfpredictor.run_orfpredictor(config)
     orthomcl.runOrthoMCL(config)
     filter.runFiltering(config)
-
+    if config["TRIMMING"]["trim"] == "True":
+        alignmenttrim.trimNucleotideAlignments(config)
+    stop = str(datetime.datetime.now())
+    logging.info("Finished all steps")
+    print "--"
+    print "Job started at: "+start
+    print "Job finished at: "+stop
+    print "--"
+    print ""
+    print "----------------------"
+    print "- Finished all steps -"
+    print "----------------------"
+    print ""
 main()
 
