@@ -122,7 +122,7 @@ def returnNumberOfLines(filename,filter_char=None):
 
 def returnNumberOfFiles(folder):
     print folder
-    number_of_files = len([name for name in os.listdir(folder) if os.path.isfile(name)]) 
+    number_of_files = len([name for name in os.listdir(folder) if os.path.isfile(folder+name)]) 
     print number_of_files
     return number_of_files
     
