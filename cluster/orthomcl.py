@@ -310,4 +310,4 @@ def runOrthoMCL(config):
     print "---"
     print "Finished all clustering steps"
     print "---"
-    logging.error("Finished all clustering steps")
+    logging.info("Finished all clustering steps")

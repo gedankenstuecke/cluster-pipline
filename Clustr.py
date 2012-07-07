@@ -121,7 +121,10 @@ def returnNumberOfLines(filename,filter_char=None):
     return counter 
 
 def returnNumberOfFiles(folder):
-    return len([name for name in os.listdir(folder) if os.path.isfile(name)])
+    print folder
+    number_of_files = len([name for name in os.listdir(folder) if os.path.isfile(name)]) 
+    print number_of_files
+    return number_of_files
     
 def main():
     '''Run ALL the stuff!'''
@@ -143,6 +146,7 @@ def main():
     filter.runFiltering(config)
     if config["TRIMMING"]["trim"] == "True":
         alignmenttrim.trimNucleotideAlignments(config)
+    logStatistics(config)
     stop = str(datetime.datetime.now())
     logging.info("Finished all steps")
     print "--"
