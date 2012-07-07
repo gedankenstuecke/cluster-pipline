@@ -80,11 +80,49 @@ def logStatistics(config):
     logging.info("##############")
     logging.info("")
     logging.info("## ORFs ##")
+    output_base = config["OUTPUT"]["folder"]
     for organism in config["INPUT"]:
         organism_hash = config["INPUT"][organism]
-        if organism_hash["skip_config"] != "True":
-            orf_file = config["OUTPUT"]["folder"] + "orfs/" + organism["prefix"]         
-   
+        if organism_hash["skip_orfs"] != "True":
+            orf_file = output_base + "orfs/" + organism_hash["prefix"] + "-orfs.tsv"
+        else:
+            orf_file = output_base + "orfs/" + organism_hash["prefix"] + "-nucleotide-orfs.fasta"
+        if organism_hash["skip_orfs"] == "True":
+            orf_counter = returnNumberOfLines(orf_file,">")
+            logging.info("Skipped prediction. ORFs for "+organism_hash["prefix"]+": "+str(orf_counter))
+        else:
+            logging.info("Did prediction: ORFs for "+organism_hash["prefix"]+": "+str(orf_counter))
+    logging.info("")
+    logging.info("## Clustering ##")
+    logging.info("Number of total cluster: " + str(returnNumberOfLines(output_base + "cluster/groups.txt")))
+    logging.info("Number of cluster with each species present: "+ str(returnNumberOfLines(output_base + "cluster/groups_filtered.txt")))
+    logging.info("Number of cluster without paralogs: " + str(returnNumberOfLines(output_base + "cluster/paralog-free-clusters.csv")))
+    logging.info("")
+    logging.info("## Alignments ##")
+    logging.info("Number of protein alignments: "+str(returnNumberOfFiles(output_base + "cluster/protein_alignments/")))
+    logging.info("Number of nucleotide alignments: "+str(returnNumberOfFiles(output_base + "cluster/nucleotide_alignments/")))
+    if config["TRIMMING"]["trim"] == "True":
+        logging.info("")
+        logging.info("## Trimming ##")
+        logging.info("Number of trimmed alignments: " + str(returnNumberOfFiles(output_base + "trimming/trimmed_alignments/")))
+    logging.info("##############")
+    logging.info("# END OF LOG #")
+    logging.info("##############")
+
+def returnNumberOfLines(filename,filter_char=None):
+    '''Count number of lines in file'''
+    handle = open(filename,"r")
+    counter = 0
+    for line in handle:
+        if filter_char is None:
+            counter += 1
+        elif line[0] == filter_char:
+            counter += 1 
+    return counter 
+
+def returnNumberOfFiles(folder):
+    return len([name for name in os.listdir(folder) if os.path.isfile(name)])
+    
 def main():
     '''Run ALL the stuff!'''
     print ""
