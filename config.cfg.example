@@ -50,6 +50,7 @@ database = /home/informatics/Dokumente/ncbi-blast-2.2.23+/Blast_linux_installed/
 [ORTHOMCL]
 result_prefix = "pr" # prefix the final clusters should carry
 start_number = "1000" # number the clusters should start on
+# min_number_species = 3 # minimum number of species which have to be in a cluster, currently broken
 location = "/somewhere/orthomcl/bin/" # folder where the orthomcl-executables are stored
 minimum_length = 10 # minimum length of aa-sequences
 max_percent_stop = 20 # maximum percent of stop codons

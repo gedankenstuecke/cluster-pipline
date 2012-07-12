@@ -15,15 +15,18 @@ def checkNumber(config):
             prefix = config["INPUT"][organism]["prefix"]
             if line.find(prefix) != -1:
                 temp_hash[prefix] = "there"
-        if len(temp_hash) == len(config["INPUT"]):
-            cluster_hash[line_array[0][:-1]] = line_array[1:]
+        if config["ORTHOMCL"].has_key("min_number_species"):
+            if len(temp_hash) >= int(config["ORTHOMCL"]["min_number_species"]):
+                cluster_hash[line_array[0][:-1]] = [line_array[1:],len(temp_hash)]  
+        elif len(temp_hash) == len(config["INPUT"]):
+            cluster_hash[line_array[0][:-1]] = [line_array[1:],len(temp_hash)]
         else:
             counter += 1
     cluster_handle.close()
     cluster_output = open(config["OUTPUT"]["folder"]+"cluster/groups_filtered.txt","w")
     for key,values in cluster_hash.items():
-        output = key + "("+str(len(values))+" genes,"+str(len(config["INPUT"]))+" taxa):\t"
-        for value in values:
+        output = key + "("+str(len(values[0]))+" genes,"+str(values[1])+" taxa):\t"
+        for value in values[0]:
             output = output + value+"("+value.split("|")[0]+") "
         output.strip()
         output = output + "\n"
@@ -214,6 +217,7 @@ def runPal2Nal(config):
         if f.find(".fasta") != -1:
             fastas.append(f)
     for fasta in fastas:
+        print fasta
         nucleotide_sequences = fastaToDict(nucleotidepath+fasta.replace("protein_alignment",""))
         protein_sequences = fastaToDict(proteinpath+fasta)
         aligned_nucleotides = iterateSpecies(protein_sequences,nucleotide_sequences)
