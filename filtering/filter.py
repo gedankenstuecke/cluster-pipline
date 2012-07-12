@@ -214,14 +214,51 @@ def runPal2Nal(config):
         if f.find(".fasta") != -1:
             fastas.append(f)
     for fasta in fastas:
-        print fasta
-        request = os.getcwd() + "/filtering/pal2nal.pl "+proteinpath + fasta + " "
-        request = request + nucleotidepath + fasta.replace("protein_alignment","")
-        request = request + " -output fasta > " + config["OUTPUT"]["folder"] + "cluster/nucleotide_alignments/" + fasta.replace("protein_","nucleotide_")
-        return_value = subprocess.call(request, shell=True) 
+        nucleotide_sequences = fastaToDict(nucleotidepath+fasta.replace("protein_alignment",""))
+        protein_sequences = fastaToDict(proteinpath+fasta)
+        aligned_nucleotides = iterateSpecies(protein_sequences,nucleotide_sequences)
+        if aligned_nucleotides != "len-error":
+            alignmentWrite(aligned_nucleotides,fasta,config)
+
     print "Created nucleotide alignments"
     print "----"
     logging.info("Created nucleotide alignments")
+
+def alignmentWrite(aligned_nucleotides,fasta,config):
+    '''Write Alignments'''
+    out_file = open(config["OUTPUT"]["folder"] + "cluster/nucleotide_alignments/" + fasta.replace("protein_","nucleotide_"),"w")
+    for species,sequence in aligned_nucleotides.items():
+        out_file.write(">"+species+"\n")
+        out_file.write(sequence+"\n")
+    out_file.close()
+
+def fastaToDict(filename):
+    '''Create id/sequence-dictionaries out of fasta'''
+    sequences = SeqIO.to_dict(SeqIO.parse(open(filename,"ru"),"fasta"))
+    return sequences
+
+def iterateSpecies(proteins,nucleotides):
+    '''Create adjusted nt-alignments for each species in fasta'''
+    aligned_nucleotides = {}
+    for species,sequence in proteins.items():
+        if len(str(sequence.seq).replace("-","")) == (len(str(nucleotides[species].seq))/3):
+            aligned_nucleotides[species] = alignNucleotide(sequence,nucleotides[species])
+        else:
+            return "len-error"
+    return aligned_nucleotides
+
+def alignNucleotide(protein_sequence,nucleotide_sequence):
+    '''adjust nt-sequence according to protein-alignment'''
+    nucleotide_position = 0
+    nucleotide_alignment = ""
+    for position in protein_sequence.seq:
+        if position == "-":
+            nucleotide_alignment = nucleotide_alignment + "---"
+        else:
+            nucleotide_alignment = nucleotide_alignment + str(nucleotide_sequence.seq[nucleotide_position:nucleotide_position+3])
+            nucleotide_position += 3
+    return nucleotide_alignment
+ 
 
 def runFiltering(config):
     '''Run all steps of filtering & creating final clusters'''
