@@ -1,6 +1,9 @@
 import sys,os
 import logging
 import subprocess
+from Bio import SeqIO
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
 
 def run_orfpredictor(config):
     '''Run all steps of ORF prediction'''
@@ -21,9 +24,60 @@ def run_orfpredictor(config):
             remove_duplicates(config,config["INPUT"][organism])
             predict_orfs(config,config["INPUT"][organism])
             extract_orfs(config,config["INPUT"][organism])
+            if config["SNP"]["call_snps"] == "True":
+                extractSnpOrfs(config,config["INPUT"][organism])
         else:
             print "----"
             movePeptides(config,config["INPUT"][organism])
+            if config["SNP"]["call_snps"] == "True":
+                moveSnps(config,config["INPUT"][organism])
+
+def extractSnpOrfs(config,organism):
+    '''Extract ORFs out of SNP-fastas'''
+    orf_handle = open(config["OUTPUT"]["folder"] + "orfs/" + organism["prefix"]+"-orfs.tsv")
+    snp_handle = open(config["OUTPUT"]["folder"] + "snps/" + organism["prefix"]+"_snps.fasta")
+    snp_contigs = SeqIO.to_dict(SeqIO.parse(snp_handle,"fasta"))
+    snp_handle.close()
+    orfs = orf_handle.readlines()
+    orf_handle.close()
+    sequences = {}
+    for line in orfs:
+        if line[0] != "#":
+            line_array = line.split("\t")
+            start = int(line_array[2])
+            stop = int(line_array[3])
+            print line_array[0]
+            print "start: "+str(start)
+            print "stop: "+str(stop)
+            if start > stop:
+                sequences[line_array[0]] = snp_contigs[line_array[0]].reverse_complement()[stop:start+1]
+            else:
+                sequences[line_array[0]] = snp_contigs[line_array[0]][start:stop+1]
+    snp_orf_handle = open(config["OUTPUT"]["folder"] + "orfs/" + organism["prefix"]+"-nt-snps.fasta","w")
+    out_sequences = []
+    for key,value in sequences.items():
+        out_sequences.append(SeqRecord(Seq(str(value.seq)),id=key,description=""))
+    SeqIO.write(out_sequences,snp_orf_handle,"fasta")
+    snp_orf_handle.close()
+
+def moveSnps(config,organism):
+    '''Move Snps if already in ORF-format'''
+    print "Moving SNP-Fasta for "+ organism["prefix"] +" to ORF-Location"
+    request = "cp " + config["OUTPUT"]["folder"] + "snps/" + organism["prefix"] + "_snps.fasta "
+    request = request + config["OUTPUT"]["folder"] + "orfs/" + organism["prefix"] + "-nt-snps.fasta"
+    try:
+        return_value = subprocess.call(request,shell=True)
+        if return_value != 0:
+            print "Couldn't copy nucleotide-SNP-file for "+organism["prefix"]
+            logging.error("Couldn't copy nucleotide-SNP-file for "+organism["prefix"])
+            sys.exit(1)
+        else:
+            print "Copied SNPs-nucleotide file for "+organism["prefix"]
+            logging.info("Copied SNPs-nucleotide file for "+organism["prefix"])
+    except OSError, e:
+        print "Couldn't copy nucleotide-SNP-file for "+organism["prefix"]
+        logging.error("Couldn't copy nucleotide-SNP-file for "+organism["prefix"])
+        sys.exit(1)
 
 def movePeptides(config,organism):
     '''Move peptide to fit with structure of pipeline'''

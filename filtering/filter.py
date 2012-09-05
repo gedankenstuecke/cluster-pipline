@@ -165,11 +165,16 @@ def createNucleotideCluster(config):
     logging.info("Creating nucleotide clusters")
     print "Creating nucleotide-clusters"
     sequences = {}
+    snp_sequences = {}
     for organism_config in config["INPUT"]:
         organism = config["INPUT"][organism_config]
         handle = open(config["OUTPUT"]["folder"]+"orfs/"+organism["prefix"]+"-nucleotide-orfs.fasta","r")
         sequences[organism["prefix"]] = SeqIO.to_dict(SeqIO.parse(handle, "fasta"))
         handle.close()
+        if config["SNP"]["call_snps"] == "True":
+            handle = open(config["OUTPUT"]["folder"]+"orfs/"+organism["prefix"]+"-nucleotide-orfs.fasta","r")
+            snp_sequences[organism["prefix"]] = SeqIO.to_dict(SeqIO.parse(handle,"fasta"))
+            handle.close()
 
     cluster_handle = open(config["OUTPUT"]["folder"]+"cluster/paralog-free-clusters.csv","r")
     clusters =  {}
@@ -192,10 +197,17 @@ def createNucleotideCluster(config):
 
     for name,cids in clusters.items():
         out_file = open(config["OUTPUT"]["folder"] + "cluster/nucleotide_clusters/" + name + ".fasta","w")
+        if config["SNP"]["call_snps"] == "True":
+            snp_out_file = open(config["OUTPUT"]["folder"] + "cluster/nucleotide_clusters/" + name + "-snps.fasta","w")
         for prefix,seqid in cids.items():
             out_file.write(">"+prefix+"\n")
             out_file.write(str(sequences[prefix][seqid].seq)+"\n")
+            if config["SNP"]["call_snps"] == "True":
+                snp_out_file.write(">"+prefix+"\n")
+                snp_out_file.write(str(sequences[prefix][seqid].seq)+"\n")
         out_file.close() 
+        if config["SNP"]["call_snps"] == "True":
+            snp_out_file.close()
     logging.info("Created nucleotide-clusters")
     print "Created nucleotide-clusters"
 
@@ -223,6 +235,11 @@ def runPal2Nal(config):
         aligned_nucleotides = iterateSpecies(protein_sequences,nucleotide_sequences)
         if aligned_nucleotides != "len-error":
             alignmentWrite(aligned_nucleotides,fasta,config)
+        if config["SNP"]["call_snps"] == "True":
+            snp_nucleotides = fastaToDict(nucleotidepath+fasta.replace("protein_alignment","-snps"))
+            aligned_nucleotides = iterateSpecies(protein_sequences,snp_nucleotides)
+            if aligned_nucleotides != "len-error":
+                alignmentWriteSnps(aligned_nucleotides,fasta,config)
 
     print "Created nucleotide alignments"
     print "----"
@@ -231,6 +248,14 @@ def runPal2Nal(config):
 def alignmentWrite(aligned_nucleotides,fasta,config):
     '''Write Alignments'''
     out_file = open(config["OUTPUT"]["folder"] + "cluster/nucleotide_alignments/" + fasta.replace("protein_","nucleotide_"),"w")
+    for species,sequence in aligned_nucleotides.items():
+        out_file.write(">"+species+"\n")
+        out_file.write(sequence+"\n")
+    out_file.close()
+
+def alignmentWriteSnps(aligned_nucleotides,fasta,config):
+    '''Write SNP-Alignments'''
+    out_file = open(config["OUTPUT"]["folder"] + "cluster/nucleotide_alignments/" + fasta.replace("protein_","nucleotide_snps_"),"w")
     for species,sequence in aligned_nucleotides.items():
         out_file.write(">"+species+"\n")
         out_file.write(sequence+"\n")

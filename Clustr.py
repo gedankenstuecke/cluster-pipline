@@ -7,6 +7,7 @@ from orf import orfpredictor
 from cluster import orthomcl
 from filtering import filter
 from trimming import alignmenttrim
+from snp_calling import snp_calling
 
 def get_parameters(arguments):
     '''Check whether all parameters are present'''
@@ -91,6 +92,7 @@ def logStatistics(config):
             orf_counter = returnNumberOfLines(orf_file,">")
             logging.info("Skipped prediction. ORFs for "+organism_hash["prefix"]+": "+str(orf_counter))
         else:
+            orf_counter = returnNumberOfLines(orf_file,">")
             logging.info("Did prediction: ORFs for "+organism_hash["prefix"]+": "+str(orf_counter))
     logging.info("")
     logging.info("## Clustering ##")
@@ -141,6 +143,8 @@ def main():
         print "Please make sure you have write-permissions for it"
         sys.exit(1)
     set_logging(config)
+    if config["SNP"]["call_snps"] == "True":
+        snp_calling.runSnpCalling(config)
     orfpredictor.run_orfpredictor(config)
     orthomcl.runOrthoMCL(config)
     filter.runFiltering(config)
